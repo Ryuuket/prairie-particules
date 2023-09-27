@@ -1,27 +1,50 @@
-import { Circle } from "./Circle";
-import { drawBack } from "./drawBack";
-import { drawCircling } from "./drawCircling";
-import { drawMoving } from "./drawMoving";
-import { drawRandColor } from "./drawRandColor";
-import { drawZooming } from "./drawZooming";
-import "./style.css";
+import { Circle } from "./Circle"; // On importe la classe Circle du même dossier.
+import { drawBack } from "./drawBack"; // On importe la fonction drawBack du même dossier.
+import { createCircles } from "./createCircles"; // On importe la fonction createCircles du même dossier.
+import "./style.css"; // On importe le CSS.
 
-const canvas = document.querySelector<HTMLCanvasElement>("#particules-canvas")!;
+// On récupère le canvas du code HTML.
+const canvas = document.querySelector<HTMLCanvasElement>("#particules-canvas")!; 
 
-const ctx = canvas.getContext("2d")!;
+const ctx = canvas.getContext("2d")!; // On récupère le contexte 2D du canvas.
 
-const width = (canvas.width = window.innerWidth);
-const height = (canvas.height = window.innerHeight);
-let poscerc1: Circle = {posx: 50, posy: 50, col: "#FF0000", rad: 50, pha: 0, limith: width / 2, limitb: 50};
-let poscerc2: Circle = {posx: width-50, posy: 50, col: "#FF0000", rad: 50, pha: 0, limith: 0, limitb: 0};
-let poscerc3: Circle = {posx: width-100, posy: height-100, col: "#FF0000", rad: 50, pha: 0, limith: 100, limitb: 20};
-let poscerc4: Circle = {posx: 150, posy: height-50, col: "#FF0000", rad: 50, pha: 0, limith: 250, limitb: 50};
-setInterval(draw, 200);
+const width = (canvas.width = window.innerWidth); // On définit width comme la largeur de la fenêtre.
+const height = (canvas.height = window.innerHeight); // On définit height comme la hauteur de la fenêtre.
+let sta = false; // On définit le statut à 0. Cela correspondra à la valeur "N'a pas cliqué."
+// const tab: Circle[] = [];
+// On déclare et définit un cercle dans chaque coin de l'écran à l'aide du constructeur de la classe.
+let cerc1 = new Circle(50, 50, "#00bfff", 50, 0, width / 2, 50); 
+let cerc2 = new Circle(width-50, 50, "#000000", 50, 0, 0, 0);
+let cerc3 = new Circle(width-100, height-100, "#1e90ff", 50, 0, 100, 20);
+let cerc4 = new Circle(50, height-50, "#4682b4 ", 50, 0, 250, 50);
+// setInterval(draw, 500);
+drawBack(canvas, width, height, sta); // On appelle la fonction drawBack pour peindre l'écran.
+setInterval(draw, 50); // On appelle la fonction draw toutes les 50 millisecondes.
 
+// On définit la fonction draw.
 function draw(){
-    drawBack(ctx, width, height);
-    drawMoving(ctx, poscerc1);
-    drawRandColor(ctx, poscerc2);
-    drawZooming(ctx, poscerc3);
-    drawCircling(ctx, poscerc4, width, height);
+    if(!sta){ // Si le statut est à false,
+        drawBack(canvas, width, height, sta); // on appelle la fonction drawBack,
+        cerc1.drawMoving(ctx); // puis la méthode drawMoving du cercle cerc1,
+        cerc2.drawRandColor(ctx); // la méthode drawRandColor du cercle cerc2,
+        cerc3.drawZooming(ctx); // et la méthode drawZooming du cercle cerc3.
+    } else { // Si le statut est à false,
+        createCircles(ctx, width, height); // on appelle la méthode createCircles.
+    }
 }
+
+// On crée un event listener sur le canvas pour réagir au déplacement du curseur de la souris.
+canvas.addEventListener('mousemove', (e) => {
+    if(!sta){ // Si le statut est à false,
+        cerc4.moveTowardCursor(e, width, height); // On appelle la méthode moveTowardCursor du cercle cerc4.
+        ctx.beginPath(); // On crée un nouveau chemin.
+        ctx.fillStyle = cerc4.col; // On prend la couleur définie pour le cercle.
+        ctx.arc(cerc4.posx, cerc4.posy, cerc4.rad, 0, Math.PI*2); // On crée le cercle.
+        ctx.fill(); // On remplit le dessin.
+    }
+})
+
+// On crée un event listener sur le canvas pour réagir au clic de la souris.
+canvas.addEventListener('mousedown', (e) => {
+    sta = true; // On change le statut à "A cliqué.".
+});
